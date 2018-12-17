@@ -15,9 +15,10 @@
     <context:include-filter type="annotation"
                             expression="org.springframework.stereotype.Controller" />
     <!--排除@service注解的类>-->
-    <context:exclude-filter type="annotation"
-        expression="org.springframework.stereotype.Service" />
+    <!--<context:exclude-filter type="annotation"-->
+        <!--expression="org.springframework.stereotype.Service" />-->
     </context:component-scan>
+
 
 
 <!-- 对模型视图名称的解析,在请求时模型视图名称添加前后缀 -->
