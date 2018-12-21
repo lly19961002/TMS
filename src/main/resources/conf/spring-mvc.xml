@@ -34,13 +34,13 @@
     <mvc:resources mapping="/css/**" location="/./css/" />
     <mvc:resources mapping="/img/**" location="/./img/" />
     <!--拦截器-->
-    <!--<mvc:interceptors>-->
-        <!--<mvc:interceptor>-->
-            <!--<mvc:mapping path="/"/>-->
-            <!--<mvc:mapping path="/**"/>-->
-            <!--<mvc:exclude-mapping path="/api/om/user/login"/>-->
-            <!--<bean class="tms.component.interceptor.UserLoginInterceptor"/>-->
-        <!--</mvc:interceptor>-->
-    <!--</mvc:interceptors>-->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <mvc:mapping path="/"/>
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/api/tms/user/login"/>
+            <bean class="tms.component.interceptor.UserLoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
 
 </beans>

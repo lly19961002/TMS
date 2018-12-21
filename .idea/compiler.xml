@@ -9,5 +9,8 @@
         <module name="TMS" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="TMS" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
