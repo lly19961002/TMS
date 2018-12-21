@@ -14,9 +14,9 @@ public class UserService {
     @Autowired
     private UserDao userDao;
     @Transactional
-    public  Map loginCheck(String username, String password){
+    public  Map login(String username, String password){
         Map map = new HashMap();
-        List<Map<String ,Object>> list = userDao.check(username,password);
+        List<Map<String ,Object>> list = userDao.login(username,password);
         if(list==null){
             map=null;
             return map;

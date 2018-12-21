@@ -11,7 +11,7 @@ import java.util.Map;
 @Repository
 public class UserDao extends MonitorBaseDao{
 
-    public List check(String username,String password) {
+    public List login(String username,String password) {
         try {
             StringBuilder sql = new StringBuilder("select password from user where username='");
             sql.append(username).append("'");

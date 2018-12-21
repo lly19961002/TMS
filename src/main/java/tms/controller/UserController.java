@@ -26,7 +26,7 @@ public class UserController {
     private UserService userService;
         @RequestMapping(value = "/login", method = RequestMethod.GET)
         public Result login(@RequestParam String username , @RequestParam String password){
-           Map resultMap=userService.loginCheck( username, password);
+           Map resultMap=userService.login( username, password);
             if(resultMap==null){
                 return new Result(1, "登录失败！", null);
             }

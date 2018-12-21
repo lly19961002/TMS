@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="tms.model.EmployeeInfoModel" table="employee_info" schema="tms">
+        <id name="jobNo" column="job_no"/>
+        <property name="employeeName" column="employee_name"/>
+        <property name="sex" column="sex"/>
+        <property name="age" column="age"/>
+        <property name="idCard" column="ID_card"/>
+        <property name="phone" column="phone"/>
+        <property name="hireDate" column="hire_date"/>
+        <property name="post" column="post"/>
+    </class>
+</hibernate-mapping>
