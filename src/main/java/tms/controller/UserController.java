@@ -1,7 +1,6 @@
 package tms.controller;
 
-import com.sun.net.httpserver.Authenticator;
-import org.eclipse.equinox.internal.app.MainApplicationLauncher;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,11 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import tms.model.Result;
 import tms.service.UserService;
-
-import javax.lang.model.element.NestingKind;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
+
 
 
 @Controller
