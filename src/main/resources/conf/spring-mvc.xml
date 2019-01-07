@@ -38,9 +38,23 @@
         <mvc:interceptor>
             <mvc:mapping path="/"/>
             <mvc:mapping path="/**"/>
-            <mvc:exclude-mapping path="/api/tms/user/login"/>
+            <mvc:exclude-mapping path="/api/**"/>
             <bean class="tms.component.interceptor.UserLoginInterceptor"/>
         </mvc:interceptor>
     </mvc:interceptors>
+
+    <mvc:annotation-driven>
+        <mvc:message-converters>
+            <!-- Use the HibernateAware mapper instead of the default -->
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                <property name="supportedMediaTypes">
+                    <list>
+                        <value>application/json; charset=UTF-8</value>
+                        <value>application/x-www-form-urlencoded; charset=UTF-8</value>
+                    </list>
+                </property>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
 
 </beans>

@@ -1,5 +1,6 @@
 package tms.dao;
 //
+import org.hibernate.Transaction;
 import tms.util.Constants;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
@@ -24,15 +25,24 @@ public abstract class BaseDao {
 
 	private final static int BATCH_COMMIT_SIZE = 100;
 
-	protected abstract Session getCurrentSession();
+//	protected abstract Session getCurrentSession();
+	protected abstract Session openSession();
 
 	protected String create(Object o) {
-		Session ss = getCurrentSession();
+		Session ss = openSession();
         String id = ss.save(o).toString();
+		ss.close();
         return id;
     }
+	protected void update(Object o) {
+		Session ss = openSession();
+		Transaction tr=ss.beginTransaction();
+		ss.update(o);
+		tr.commit();
+		ss.close();
+	}
 	protected void batchCreate(List<?> objList) {
-		Session ss = getCurrentSession();
+		Session ss = openSession();
 		Class<?> clazz = null;
 		for (int i = 0 ; i < objList.size() ; i++ ) {
 			Object obj = objList.get(i);
@@ -47,7 +57,7 @@ public abstract class BaseDao {
 		}
 	}
 	protected void batchCreate(Object[] objs) {
-		Session ss = getCurrentSession();
+		Session ss = openSession();
 		Class<?> clazz = null;
 		for (int i = 0 ; i < objs.length; i++ ) {
 			Object obj = objs[i];
@@ -65,43 +75,51 @@ public abstract class BaseDao {
 	protected void updateByID(Class<?> entityClazz, Object transientPO, Serializable id, String... ignorePropertyNames){
 		Object persistentO = getByID(entityClazz, id);
     	if(persistentO == null) return;
-		
+
     	BeanUtils.copyProperties(transientPO, persistentO, ignorePropertyNames);
+
     }
 	protected int updateByHQL(Class<?> entityClazz, String hql, List<Object> params){
 		return this.updateByHQL(entityClazz, hql, params.toArray());
 	}
+	protected void updateBySQL( String sql){
+		Query query = openSession().createSQLQuery(sql);
+		query.executeUpdate();
+	}
+
 	protected int updateByHQL(Class<?> entityClazz, String hql, Object[] params){
-		Session ss = getCurrentSession();
+		Session ss = openSession();
         Query query = ss.createQuery(hql);
-    	
+		ss.close();
         for(int i = 0 , len = params.length ; i < len ; i++) {
 		    query.setParameter(i , params[i]);
 		}
 
     	return query.executeUpdate();
+
     }
 
 	protected void deleteByID(Class<?> entityClazz, Serializable id) {
     	Object persistentO = getByID(entityClazz, id);
     	if(persistentO == null) return;
-    	
-    	Session ss = getCurrentSession();
+    	Session ss = openSession();
+		Transaction tr=ss.beginTransaction();
         ss.delete(persistentO);
+        tr.commit();
+		ss.close();
     }
     protected int deleteByHQL(Class<?> entityClazz, String hql, Object[] params) {
-    	Session ss = getCurrentSession();
+    	Session ss = openSession();
     	Query query = ss.createQuery(hql);
     	
     	for(int i = 0 , len = params.length ; i < len ; i++) {
 			query.setParameter(i , params[i]);
 		}
-
     	int i = query.executeUpdate();
     	return i;
     }
     protected void deleteByHQL(Class<?> entityClazz, String hql, Object[] params1, Object[] namedParams) {
-    	Session ss = getCurrentSession();
+    	Session ss = openSession();
     	Query query = ss.createQuery(hql);
     	if(params1 != null){
     		for(int i = 0 , len = params1.length ; i < len ; i++) {
@@ -117,10 +135,10 @@ public abstract class BaseDao {
     }
     
     protected <T> T getByID(Class<T> entityClazz, Serializable id) {
-        return (T) getCurrentSession().get(entityClazz, id);
+        return (T) openSession().get(entityClazz, id);
     }
     protected <T> T getByHQL(String hql, Object... params) {
-        Query query = getCurrentSession().createQuery(hql);
+        Query query = openSession().createQuery(hql);
 		
 		for(int i = 0 , len = params.length ; i < len ; i++) {
 			query.setParameter(i , params[i]);
@@ -134,7 +152,7 @@ public abstract class BaseDao {
 	    }
     }
     protected <T> T getByEQ(Class<T> entityClazz, Object... params) {
-    	Criteria c = getCurrentSession().createCriteria(entityClazz);
+    	Criteria c = openSession().createCriteria(entityClazz);
 
 	    for(int i = 0 , len = params.length ; i < len ; i++) {
 	    	Object[] param = (Object[]) params[i];
@@ -150,7 +168,7 @@ public abstract class BaseDao {
     }
 
     protected <T> T getBySQL(String sql, Object... params) {
-        Query query = getCurrentSession().createSQLQuery(sql);
+        Query query = openSession().createSQLQuery(sql);
 		
 		for(int i = 0 , len = params.length ; i < len ; i++) {
 			query.setParameter(i , params[i]);
@@ -164,7 +182,7 @@ public abstract class BaseDao {
 	    }
     }
     protected <T> T getBySQL(String sql, Class<?> entityClazz, Object... params) {
-        Query query = getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(entityClazz));
+        Query query = openSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(entityClazz));
 		
 		for(int i = 0 , len = params.length ; i < len ; i++) {
 			query.setParameter(i , params[i]);
@@ -185,7 +203,7 @@ public abstract class BaseDao {
 		return this.listBySQL(entityClazz, sql, filterParams.toArray());
 	}
     protected <T>List<T> listBySQL(Class<?> entityClazz, String sql, Object... filterParams) {
-		Query query = getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(entityClazz));
+		Query query = openSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(entityClazz));
 		
 		for(int i = 0 , len = filterParams.length ; i < len ; i++) {
 			query.setParameter(i , filterParams[i]);
@@ -194,19 +212,19 @@ public abstract class BaseDao {
 	}
     
     protected List<?> listBySQL(ResultTransformer transformer, String sql, Object... filterParams) {
-		Query query = getCurrentSession().createSQLQuery(sql).setResultTransformer(transformer);
+		Query query = openSession().createSQLQuery(sql).setResultTransformer(transformer);
 		
 		for(int i = 0 , len = filterParams.length ; i < len ; i++) {
 			query.setParameter(i , filterParams[i]);
 		}
 		return (List<?>)query.list();
 	}
-    
+
     protected List<?> listBySQL(String sql, List<?> filterParams) {
     	return listBySQL(sql, filterParams.toArray());
     }
     protected List<?> listBySQL(String sql, Object... filterParams) {
-		Query query = getCurrentSession().createSQLQuery(sql);
+		Query query = openSession().createSQLQuery(sql);
 		
 		for(int i = 0 , len = filterParams.length ; i < len ; i++) {
 			query.setParameter(i , filterParams[i]);
@@ -214,7 +232,7 @@ public abstract class BaseDao {
 		return (List<?>)query.list();
 	}
     protected <T>List<T> listByHQL(String hql, List<?> params) {
-		Query query = getCurrentSession().createQuery(hql);
+		Query query = openSession().createQuery(hql);
 		
 		for(int i = 0 , len = params.size() ; i < len ; i++) {
 			query.setParameter(i , params.get(i));
@@ -223,7 +241,7 @@ public abstract class BaseDao {
 		return query.list();
 	}
 	protected <T>List<T> listByHQL(String hql, Object... params) {
-		Query query = getCurrentSession().createQuery(hql);
+		Query query =openSession().createQuery(hql);
 		
 		for(int i = 0 , len = params.length ; i < len ; i++) {
 			query.setParameter(i , params[i]);
@@ -233,7 +251,7 @@ public abstract class BaseDao {
 	}
 
 	protected <T>List<T> listByEQ(Class<?> entityClazz, Object[] params) {
-    	Criteria c = getCurrentSession().createCriteria(entityClazz);
+    	Criteria c = openSession().createCriteria(entityClazz);
 
 	    for(int i = 0 , len = params.length ; i < len ; i++) {
 	    	Object[] param = (Object[]) params[i];
@@ -246,7 +264,7 @@ public abstract class BaseDao {
 	protected List<?> listByIDs(Class<?> entityClazz, String idName, List<?> ids) {
         if(ids == null || ids.size() == 0) return null;
 		
-    	Criteria c = getCurrentSession().createCriteria(entityClazz);
+    	Criteria c = openSession().createCriteria(entityClazz);
 	    c.add(Restrictions.in(idName, ids.toArray()));
 
 	    return c.list();
@@ -255,7 +273,7 @@ public abstract class BaseDao {
 	protected <T>List<T> pageListBySQL(Class entityClazz, String sql, int pageNo, int pageSize, Object[] filterParams) {
 		pageSize = checkPageSize(pageSize);
 
-		Query query = getCurrentSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(entityClazz));
+		Query query = openSession().createSQLQuery(sql).setResultTransformer(Transformers.aliasToBean(entityClazz));
 		for(int i = 0, len = filterParams.length ; i < len ; i++) {
 			query.setParameter(i, filterParams[i]);
 		}
@@ -266,7 +284,7 @@ public abstract class BaseDao {
 
 	
 	protected long countByEQ(Class<?> entityClazz, String countPropertyName, Object... filterParams) {
-		Criteria c = getCurrentSession().createCriteria(entityClazz);
+		Criteria c = openSession().createCriteria(entityClazz);
 		
 		ProjectionList projList = Projections.projectionList();
 		projList.add(Projections.count(countPropertyName));
@@ -288,7 +306,7 @@ public abstract class BaseDao {
 
 
     private Query createQuerySql(final String queryString, final Object... values) {
-		Query query = getCurrentSession().createSQLQuery(queryString);
+		Query query = openSession().createSQLQuery(queryString);
 		if (values != null) {
 			for (int i = 0; i < values.length; i++) {
 				if(values[i] != null)
@@ -299,7 +317,7 @@ public abstract class BaseDao {
 	}
 
     private Query createSQLQuery(final String queryString, final Object... values) {
-		Query query = getCurrentSession().createSQLQuery(queryString);
+		Query query = openSession().createSQLQuery(queryString);
 		if (values != null) {
 			for (int i = 0; i < values.length; i++) {
 				if(values[i] != null)
@@ -309,7 +327,7 @@ public abstract class BaseDao {
 		return query;
 	}
 	private Query createQuery(final String hql, final Object... values) {
-		Query query = getCurrentSession().createQuery(hql);
+		Query query = openSession().createQuery(hql);
 		if (values != null) {
 			for (int i = 0; i < values.length; i++) {
 				if(values[i] != null)
@@ -320,7 +338,7 @@ public abstract class BaseDao {
 	}
 
 	protected long count(Class<?> entityClazz, String countPropertyName, Object... filterParams) {
-		Criteria c = getCurrentSession().createCriteria(entityClazz);
+		Criteria c =openSession().createCriteria(entityClazz);
 
 		ProjectionList projList = Projections.projectionList();
 		projList.add(Projections.count(countPropertyName));
@@ -393,7 +411,7 @@ public abstract class BaseDao {
 		//设定排序
 		setOrders(dc, sortParams);
 
-		return dc.getExecutableCriteria(getCurrentSession()).setFirstResult((pageNo - 1) * pageSize).setMaxResults(pageSize).list();
+		return dc.getExecutableCriteria(openSession()).setFirstResult((pageNo - 1) * pageSize).setMaxResults(pageSize).list();
 	}
 
 	protected <T>List<T> pageList(Class<?> entityClazz, int pageNo, int pageSize, Object[] sortParams) {
@@ -404,7 +422,7 @@ public abstract class BaseDao {
 	protected <T>List<T> pageList(Class<?> entityClazz, int pageNo, int pageSize, Object[] sortParams, Object[] filterParams) {
 		pageSize = checkPageSize(pageSize);
 
-		Criteria c = getCurrentSession().createCriteria(entityClazz);
+		Criteria c = openSession().createCriteria(entityClazz);
 
 		setOrders(c, sortParams);
 

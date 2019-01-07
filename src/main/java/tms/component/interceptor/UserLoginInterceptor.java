@@ -48,7 +48,10 @@ public class UserLoginInterceptor extends HandlerInterceptorAdapter {
         log.info("url:"+url);
         //System.out.println(">>>: " + url);
         // 判断路径是登出还是登录验证，是这两者之一的话执行Controller中定义的方法
-        if(url.startsWith("api/user/login") || url.endsWith("/user/logout")) {
+//        if(url.startsWith("api/user/login") || url.endsWith("/user/logout")) {
+//            return true;
+//        }
+        if(url.startsWith("api/") || url.endsWith("/user/logout")) {
             return true;
         }
 

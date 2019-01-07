@@ -23,22 +23,31 @@
         <property name="jdbcUrl" value="${jdbc.url}" />     <!--数据库地址-->
         <property name="user" value="${jdbc.username}" />   <!--用户名-->
         <property name="password" value="${jdbc.password}" />   <!--密码-->
-        <property name="maxPoolSize" value="40" />      <!--最大连接数-->
-        <property name="minPoolSize" value="1" />       <!--最小连接数-->
-        <property name="initialPoolSize" value="10" />      <!--初始化连接池内的数据库连接-->
-        <property name="maxIdleTime" value="20" />  <!--最大空闲时间-->
+        <!--<property name="maxPoolSize" value="40" />      &lt;!&ndash;最大连接数&ndash;&gt;-->
+        <!--<property name="minPoolSize" value="1" />       &lt;!&ndash;最小连接数&ndash;&gt;-->
+        <!--<property name="initialPoolSize" value="10" />      &lt;!&ndash;初始化连接池内的数据库连接&ndash;&gt;-->
+        <!--<property name="maxIdleTime" value="20" />  &lt;!&ndash;最大空闲时间&ndash;&gt;-->
+        <property name="maxPoolSize" value="40" />
+        <property name="minPoolSize" value="10" />
+        <property name="maxIdleTime" value="1800" />
+        <property name="maxStatements" value="0" />
+        <property name="initialPoolSize" value="10" />
+        <property name="idleConnectionTestPeriod" value="1800" />
     </bean>
 
     <!--配置session工厂-->
+    <!--<bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">-->
     <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-        <property name="dataSource" ref="dataSource" />
-        <property name="packagesToScan" value="com" />
+    <property name="dataSource" ref="dataSource" />
+        <property name="packagesToScan" value="tms.model" />
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop> <!--hibernate根据实体自动生成数据库表-->
                 <prop key="hibernate.dialect">${hibernate.dialect}</prop>   <!--指定数据库方言-->
                 <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>     <!--在控制台显示执行的数据库操作语句-->
                 <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>     <!--在控制台显示执行的数据哭操作语句（格式）-->
+                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext
+                </prop>
             </props>
         </property>
     </bean>
